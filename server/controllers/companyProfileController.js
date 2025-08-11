@@ -1,6 +1,6 @@
 // File: /backend/src/controllers/companyProfileController.js
 
-const companyModel = require('../models/companyModel');
+const companyModel = require('../models/companyProfileModel');
 const userModel = require('../models/userModel');
 const cloudinary = require('../utils/cloudinary'); 
 

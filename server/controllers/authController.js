@@ -1,166 +1,125 @@
 // File: /backend/src/controllers/authController.js
-const { StatusCodes } = require("http-status-codes");
-const pool = require("../config/db");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
-const mailer = require("../utils/mailer"); // Import the mailer utility
 
-// Placeholder function for sending SMS. You will need to implement this.
-const sendVerificationSms = async (mobileNumber, token) => {
-  // Use a service like Twilio to send an SMS with the token.
-  console.log(`Sending SMS to ${mobileNumber} with token: ${token}`);
-  // Your SMS sending logic here
-};
+const admin = require('../config/firebaseConfig');
+const bcrypt = require('bcrypt');
+const userModel = require('../models/userModel');
+const jwt = require('jsonwebtoken');
+const mailer = require('../utils/mailer');
 
-exports.register = async (req, res) => {
-  const { username, password, email, mobile_number } = req.body;
+// IMPORTANT: Use the same secret key as in your server.js for signing JWTs
+const jwtSecret = process.env.JWT_KEY || 'YOUR_SECRET_KEY';
+
+exports.registerUser = async (req, res, next) => {
   try {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const { email, password, full_name, mobile_no, gender } = req.body;
 
-    // Save user to the database
-    const newUser = await pool.query(
-      `INSERT INTO users (username, password, email, mobile_number) VALUES ($1, $2, $3, $4) RETURNING id, username`,
-      [username, hashedPassword, email, mobile_number]
-    );
+    if (!password) {
+      return res.status(400).json({ message: 'Password is required.' });
+    }
+    
+    const gender_char = gender ? gender.charAt(0).toUpperCase() : null;
+    const password_hash = await bcrypt.hash(password, 10);
 
-    res.status(StatusCodes.CREATED).json({
-      message: "User registered successfully. Please verify your email and mobile number.",
-      userId: newUser.rows[0].id
+    const userRecord = await admin.auth().createUser({
+      email: email,
+      password: password,
+      displayName: full_name,
     });
-  } catch (error) {
-    if (error.code === '23505') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ msg: "Email or username already exists." });
-    }
-    console.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: "Registration failed." });
-  }
-};
-
-exports.login = async (req, res) => {
-  const { username, password } = req.body;
-  try {
-    const user = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
-    if (user.rows.length === 0) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({ msg: "Invalid credentials." });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.rows[0].password);
-    if (!isMatch) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({ msg: "Invalid credentials." });
-    }
-
-    const token = jwt.sign({ id: user.rows[0].id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-    res.status(StatusCodes.OK).json({
-      msg: "Login successful.",
-      token: token,
-      userId: user.rows[0].id
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: "Login failed." });
-  }
-};
-
-exports.sendEmailVerification = async (req, res) => {
-  try {
-    const { email } = req.body;
-    const user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-    if (user.rows.length === 0) {
-      return res.status(StatusCodes.NOT_FOUND).json({ msg: "User not found." });
-    }
-
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-
-    await pool.query(
-      "UPDATE users SET email_verification_token = $1 WHERE email = $2",
-      [verificationToken, email]
-    );
-
-    // Use the mailer utility to send the email
+    
+    const emailVerificationLink = await admin.auth().generateEmailVerificationLink(email);
     await mailer.sendEmail(
       email,
       'Email Verification',
-      `Please verify your email by clicking on this link: http://localhost:3000/api/auth/verify-email?token=${verificationToken}`
+      `Please verify your email by clicking on this link: ${emailVerificationLink}`
     );
+    
+    const newUser = await userModel.create({
+      firebase_uid: userRecord.uid,
+      email,
+      password_hash,
+      full_name,
+      mobile_no,
+      gender: gender_char,
+      signup_type: 'e',
+      is_email_verified: false,
+      is_mobile_verified: false
+    });
 
-    res.status(StatusCodes.OK).json({ msg: "Verification email sent. Please check your inbox." });
+    res.status(201).json({
+      message: 'User registered successfully. An email verification link has been sent to your inbox. Please also verify your mobile number.',
+      user: {
+        id: newUser.id,
+        email: newUser.email
+      }
+    });
+
   } catch (error) {
-    console.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: "Failed to send verification email." });
+    if (error.code === 'auth/email-already-exists') {
+      return res.status(409).json({ message: 'Email already in use.' });
+    }
+    next(error);
   }
 };
 
-exports.verifyEmail = async (req, res) => {
+exports.loginUser = async (req, res, next) => {
   try {
-    const { token } = req.query;
-    const user = await pool.query(
-      "SELECT * FROM users WHERE email_verification_token = $1",
-      [token]
-    );
+    const { email, password } = req.body;
+    
+    const userRecord = await admin.auth().getUserByEmail(email);
 
-    if (user.rows.length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ msg: "Invalid or expired token." });
+    const localUser = await userModel.findByFirebaseUid(userRecord.uid);
+    if (!localUser) {
+      return res.status(404).json({ message: 'User not found in local database.' });
     }
-
-    await pool.query(
-      "UPDATE users SET email_verified = true, email_verification_token = NULL WHERE id = $1",
-      [user.rows[0].id]
+    
+    const token = jwt.sign(
+      { id: localUser.id, email: localUser.email, firebaseUid: userRecord.uid },
+      jwtSecret,
+      { expiresIn: '90d' }
     );
 
-    res.status(StatusCodes.OK).json({ msg: "Email verified successfully." });
+    res.status(200).json({
+      message: 'Login successful.',
+      token,
+    });
+
   } catch (error) {
-    console.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: "Email verification failed." });
+    if (error.code === 'auth/user-not-found') {
+      return res.status(401).json({ message: 'Invalid credentials.' });
+    }
+    next(error);
   }
 };
 
-exports.sendMobileVerification = async (req, res) => {
+exports.verifyEmail = async (req, res, next) => {
   try {
-    const { mobile_number } = req.body;
-    const user = await pool.query("SELECT * FROM users WHERE mobile_number = $1", [mobile_number]);
-    if (user.rows.length === 0) {
-      return res.status(StatusCodes.NOT_FOUND).json({ msg: "User not found." });
+    const { oobCode } = req.query;
+    
+    const email = await admin.auth().verifyActionCode(oobCode);
+    await admin.auth().applyActionCode(oobCode);
+    
+    const user = await userModel.findByEmail(email);
+    if (user) {
+      await userModel.updateEmailVerificationStatus(user.id);
     }
 
-    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit number
-
-    await pool.query(
-      "UPDATE users SET mobile_verification_token = $1 WHERE mobile_number = $2",
-      [verificationToken, mobile_number]
-    );
-
-    await sendVerificationSms(mobile_number, verificationToken);
-
-    res.status(StatusCodes.OK).json({ msg: "Verification SMS sent. Please check your phone." });
+    res.status(200).json({ message: 'Email verified successfully.' });
   } catch (error) {
-    console.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: "Failed to send verification SMS." });
+    res.status(400).json({ message: 'Invalid or expired email verification link.' });
   }
 };
 
-exports.verifyMobile = async (req, res) => {
+exports.verifyMobile = async (req, res, next) => {
   try {
-    const { token, mobile_number } = req.body;
-    const user = await pool.query(
-      "SELECT * FROM users WHERE mobile_verification_token = $1 AND mobile_number = $2",
-      [token, mobile_number]
-    );
+    const { firebase_uid } = req.body;
 
-    if (user.rows.length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ msg: "Invalid or expired token." });
+    const user = await userModel.findByFirebaseUid(firebase_uid);
+    if (user) {
+      await userModel.updateMobileVerificationStatus(user.id);
     }
 
-    await pool.query(
-      "UPDATE users SET mobile_verified = true, mobile_verification_token = NULL WHERE id = $1",
-      [user.rows[0].id]
-    );
-
-    res.status(StatusCodes.OK).json({ msg: "Mobile number verified successfully." });
+    res.status(200).json({ message: 'Mobile number verified successfully.' });
   } catch (error) {
-    console.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: "Mobile verification failed." });
+    res.status(400).json({ message: 'Failed to verify mobile number.' });
   }
 };
