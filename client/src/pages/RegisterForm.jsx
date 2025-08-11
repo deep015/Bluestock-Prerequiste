@@ -1,116 +1,149 @@
+import React, { useState } from "react";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+import "../index.css";
 
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
+const RegisterForm = () => {
+  const [phone, setPhone] = useState("");
+  const [gender, setGender] = useState("");
+ const [showPopup, setShowPopup] = useState(false);
 
-const RegisterForm = ({ toggleView }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
-  
-  const onSubmit = data => {
-    console.log('Register form submitted:', data);
-    // Add your registration API call logic here
+  const handleRegister = (e) => {
+    e.preventDefault();
+    setShowPopup(true); // show popup on register click
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800 text-center dark:text-gray-100">
-        Register as a Company
-      </h2>
-      
-      {/* Full Name Input */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-          <FaUser className="h-5 w-5 text-gray-400" />
-        </div>
-        <input
-          id="fullName-register"
-          type="text"
-          {...register("fullName", { required: "Full name is required" })}
-          className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-          placeholder="Full Name"
-        />
-        {errors.fullName && (
-          <p className="mt-1 text-sm text-red-500">{errors.fullName.message}</p>
-        )}
+    <>
+   
+<div className="w-full flex flex-col gap-6 text-black dark:text-white">
+  <h2 className="text-2xl font-bold text-center text-[#1e0e4b] dark:text-white">
+    Register as a Company
+  </h2>
+
+  <form  onSubmit={handleRegister} className="flex flex-col gap-4 w-full">
+    {/* Full Name */}
+    <div>
+      <label className="block font-medium text-sm mb-2">Full Name</label>
+      <input
+        type="text"
+        className="w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-[#478aff] outline-none"
+      />
+    </div>
+
+    {/* Phone */}
+    <div>
+      <label className="block font-medium text-sm mb-2">Phone Number</label>
+      <PhoneInput
+        country={"in"}
+        value={phone}
+        onChange={(value) => setPhone(value)}
+        enableSearch={true}
+        placeholder="Enter mobile number"
+        inputClass="!w-full !h-11 !rounded-lg !border-gray-300 shadow-sm"
+      />
+    </div>
+
+    {/* Gender */}
+    <div>
+      <label className="block font-medium text-sm mb-2">Gender</label>
+      <div className="flex gap-2">
+        {["Male", "Female", "Other"].map((g) => (
+          <button
+            key={g}
+            type="button"
+            onClick={() => setGender(g)}
+            className={`px-4 py-2 rounded-4xl gap-2 shadow-md transition text-sm font-medium 
+              ${
+                gender === g
+                  ? "bg-[#478aff] text-white"
+                  : "bg-white text-gray-700"
+              }`}
+          >
+            {g}
+          </button>
+        ))}
       </div>
-      
-      {/* Email Input */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-          <FaEnvelope className="h-5 w-5 text-gray-400" />
-        </div>
+    </div>
+
+    {/* Passwords */}
+    <div className="flex gap-3">
+      <div className="w-1/2">
+        <label className="block font-medium text-sm mb-2">Password</label>
         <input
-          id="email-register"
-          type="email"
-          {...register("email", { 
-            required: "Email is required",
-            pattern: { value: /^\S+@\S+$/i, message: "Invalid email address" }
-          })}
-          className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-          placeholder="Email"
-        />
-        {errors.email && (
-          <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
-        )}
-      </div>
-      
-      {/* Password Input */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-          <FaLock className="h-5 w-5 text-gray-400" />
-        </div>
-        <input
-          id="password-register"
           type="password"
-          {...register("password", {
-            required: "Password is required",
-            minLength: { value: 8, message: "Password must be at least 8 characters" }
-          })}
-          className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-          placeholder="Password"
+          className="w-full h-11 px-3 rounded-lg border  shadow-md focus:ring-2 focus:ring-[#478aff] outline-none"
         />
-        {errors.password && (
-          <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
-        )}
       </div>
-
-      {/* Terms and Conditions Checkbox */}
-      <div className="flex items-center">
+      <div className="w-1/2">
+        <label className="block font-medium text-sm mb-2">Confirm Password</label>
         <input
-          id="terms"
-          type="checkbox"
-          {...register("terms", { required: "You must accept the terms and conditions" })}
-          className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+          type="password"
+          className="w-full h-11 px-3 rounded-lg border  shadow-md focus:ring-2 focus:ring-[#478aff] outline-none"
         />
-        <label htmlFor="terms" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
-          I accept the Terms and Conditions
-        </label>
       </div>
-      {errors.terms && (
-        <p className="mt-1 text-sm text-red-500">{errors.terms.message}</p>
+    </div>
+
+    {/* Privacy */}
+    <div className="flex items-start gap-2 text-sm">
+      <input type="checkbox" className="mt-1 w-4 h-4 accent-[#478aff]" />
+      <span className="text-gray-600">
+        All your information is processed as per our{" "}
+        <a href="#" className="text-[#478aff] hover:underline">Privacy Policy</a>{" "}
+        and{" "}
+        <a href="#" className="text-[#478aff] hover:underline">Terms of Use</a>.
+      </span>
+    </div>
+
+    {/* Submit */}
+    <button
+      type="submit"
+      className="bg-[#478aff] h-11 w-full rounded-full text-white font-medium shadow-md hover:bg-blue-600"
+    >
+     Register
+    </button>
+  </form>
+
+  {/* Sign up */}
+  <p className="text-sm text-center mt-2">
+    Don’t have an account?{" "}
+    <a className="text-[#7747ff] hover:underline" href="#">Sign up</a>
+  </p>
+</div>
+      {showPopup && (
+        <div className="fixed  inset-0 b bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-xl shadow-lg h-120 w-1/2 max-w-md">
+            <h3 className="text-sm font-semibold pt-5 pl-3 text-left">
+              Great Almost done !
+            </h3>
+            <h3 className="text-sm font-semibold border-b-2 pl-3 pb-2 text-left">
+              Please Verfiy your mobile number
+            </h3>
+            <p className="text-center mb-4 text-gray-600">
+              Please verify your email and mobile number to proceed.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                Email Link Verification
+              </button>
+              <button className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
+                Mobile OTP Verification
+              </button>
+            </div>
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={() => setShowPopup(false)}
+                className="text-red-500 underline"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-
-      {/* Register Button */}
-      <button
-        type="submit"
-        className="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition-colors duration-300"
-      >
-        Register
-      </button>
-
-      {/* Toggle Link */}
-      <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-        Already have an account?{' '}
-        <span
-          className="text-indigo-600 font-semibold cursor-pointer hover:underline"
-          onClick={toggleView}
-        >
-          Login
-        </span>
-      </div>
-    </form>
+    
+    </>
   );
 };
 
-
-export default RegisterForm
+export default RegisterForm;

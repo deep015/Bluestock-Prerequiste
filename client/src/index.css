@@ -1,1 +1,34 @@
 @import "tailwindcss";
+
+/* Remove default box styles */
+.react-tel-input .form-control {
+  border: none !important;
+  border-bottom: 2px solid #ccc !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 8px 8px 8px 48px !important; /* keep space for flag */
+  font-size: 16px;
+}
+
+/* Dark mode support */
+.dark .react-tel-input .form-control {
+  border-bottom: 2px solid #666 !important;
+  background-color: transparent !important;
+  color: white !important;
+}
+
+/* Country flag button underline style */
+.react-tel-input .flag-dropdown {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid #ccc !important;
+}
+
+.dark .react-tel-input .flag-dropdown {
+  border-bottom: 2px solid #666 !important;
+}
+
+/* Dropdown alignment fix */
+.react-tel-input .selected-flag {
+  padding: 0 8px;
+}
