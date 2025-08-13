@@ -1,4 +1,3 @@
-// File: /backend/src/tests/authRoutes.test.js
 
 const request = require('supertest');
 const express = require('express');

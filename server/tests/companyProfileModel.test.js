@@ -1,9 +1,7 @@
-// File: /backend/src/tests/companyProfileModel.test.js
 
 const pool = require('../config/db');
 const companyModel = require('../models/companyModel');
 
-// Mock the entire db pool module to control database behavior
 jest.mock('../config/db', () => ({
   query: jest.fn(),
 }));

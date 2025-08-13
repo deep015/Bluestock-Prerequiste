@@ -1,4 +1,3 @@
-// File: /backend/src/tests/authMiddleware.test.js
 
 const httpMocks = require('node-mocks-http');
 const jwt = require('jsonwebtoken');

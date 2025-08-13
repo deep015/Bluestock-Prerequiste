@@ -1,4 +1,3 @@
-// File: /backend/src/tests/companyProfileController.test.js
 
 const httpMocks = require('node-mocks-http');
 const companyController = require('../controllers/companyProfileController');

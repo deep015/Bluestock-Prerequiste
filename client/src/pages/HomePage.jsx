@@ -7,7 +7,7 @@ const HomePage = () => {
 
   return (
     <div className="flex items-center justify-center  bg-gray-100 dark:bg-gray-900 p-6">
-      <div className="w-full m-5 h-135 max-w-5xl rounded-3xl bg-white dark:bg-gray-800 shadow-2xl overflow-hidden md:flex">
+      <div className="w-full  h-135 max-w-5xl rounded-3xl bg-white dark:bg-gray-800 shadow-2xl overflow-hidden md:flex">
         
         {/* Left fixed banner */}
         <SideBanner />

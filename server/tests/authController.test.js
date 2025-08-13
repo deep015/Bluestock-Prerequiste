@@ -1,4 +1,3 @@
-// File: /backend/src/tests/authController.test.js
 
 const httpMocks = require('node-mocks-http');
 const authController = require('../controllers/authController');

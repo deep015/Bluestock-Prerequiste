@@ -1,9 +1,7 @@
-// File: /backend/src/tests/db.test.js
 
 const { Pool } = require('pg');
 
-// Mock the entire pg module to control the behavior of the database pool.
-// The mock is hoisted, so this runs before the 'require' of the db file.
+
 jest.mock('pg', () => {
   const mPool = {
     query: jest.fn(),

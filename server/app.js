@@ -10,15 +10,14 @@ const errorHandlerMiddleware = require('./middleware/error-handler');
 const app = express();
 const PORT = 3000;
 
-// ✅ Enable CORS for all requests
 app.use(cors({
-  origin: 'http://localhost:5173', // Replace with your frontend URL
+  origin: 'http://localhost:5173', 
   credentials: true
 }));
 
 app.use(express.json());
 
-// DB Connection check
+
 pool.query('SELECT NOW()', (err, res) => {
   if (err) {
     console.error('❌ DB not connected:', err);
@@ -27,7 +26,6 @@ pool.query('SELECT NOW()', (err, res) => {
   }
 });
 
-// Test route: Get all users
 app.get('/users', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM users');

@@ -1,4 +1,3 @@
-// File: /backend/src/tests/userModel.test.js
 
 const userModel = require('../models/userModel');
 const db = require('../config/db');

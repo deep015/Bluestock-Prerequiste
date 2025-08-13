@@ -1,4 +1,3 @@
-// File: /backend/src/models/userModel.js
 
 const pool = require('../config/db');
 

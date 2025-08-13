@@ -1,4 +1,3 @@
-// File: /backend/src/models/companyModel.js
 
 const pool = require('../config/db');
 

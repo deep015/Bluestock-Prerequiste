@@ -1,4 +1,3 @@
-// File: /backend/src/tests/companyProfileRoutes.test.js
 
 const request = require('supertest');
 const express = require('express');
@@ -6,7 +5,6 @@ const companyRoutes = require('../routes/companyProfileRoutes');
 const verifyToken = require('../middleware/authMiddleware');
 const companyController = require('../controllers/companyProfileController');
 
-// Set up a mock Express app to test the routes
 const app = express();
 app.use(express.json());
 

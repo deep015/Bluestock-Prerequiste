@@ -1,19 +1,14 @@
-// File: /backend/src/controllers/companyProfileController.js
 
 const companyModel = require('../models/companyProfileModel');
 const userModel = require('../models/userModel');
 const cloudinary = require('../utils/cloudinary'); 
 
-/**
- * Handles the registration of a new company profile.
- * This route is protected by a JWT. The user's ID is retrieved from the token.
- */
 exports.registerCompany = async (req, res, next) => {
   try {
     const owner_id = req.user.id;
     const { name, address, city, state, country, postal_code, website, industry } = req.body;
     
-    // Check if a company profile already exists for this user
+   
     const existingCompany = await companyModel.findByOwnerId(owner_id);
     if (existingCompany) {
       return res.status(409).json({ message: 'Company profile already exists for this user.' });
@@ -41,9 +36,7 @@ exports.registerCompany = async (req, res, next) => {
   }
 };
 
-/**
- * Fetches the company profile details for the authenticated user.
- */
+
 exports.getCompanyProfile = async (req, res, next) => {
   try {
     const owner_id = req.user.id;
@@ -62,9 +55,7 @@ exports.getCompanyProfile = async (req, res, next) => {
   }
 };
 
-/**
- * Updates the company profile details for the authenticated user.
- */
+
 exports.updateCompanyProfile = async (req, res, next) => {
   try {
     const owner_id = req.user.id;
@@ -85,9 +76,7 @@ exports.updateCompanyProfile = async (req, res, next) => {
   }
 };
 
-/**
- * Uploads a company logo to Cloudinary and saves the URL.
- */
+
 exports.uploadCompanyLogo = async (req, res, next) => {
   try {
     const owner_id = req.user.id;
@@ -96,9 +85,7 @@ exports.uploadCompanyLogo = async (req, res, next) => {
       return res.status(400).json({ message: 'No file uploaded.' });
     }
 
-    // This is the key change: we need to get a URL from the upload,
-    // not pass the file object directly to the model.
-    // Assuming a placeholder function or Cloudinary utility that returns a URL.
+    
     const logoUrl = await cloudinary.uploadToCloudinary(req.file.buffer, 'company-logos');
 
     const updatedProfile = await companyModel.updateLogoUrl(owner_id, logoUrl);

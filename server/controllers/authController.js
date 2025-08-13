@@ -1,4 +1,3 @@
-// File: /backend/src/controllers/authController.js
 
 const admin = require('../config/firebaseAdmin');
 const bcrypt = require('bcrypt');
@@ -6,7 +5,7 @@ const userModel = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const mailer = require('../utils/mailer');
 
-// IMPORTANT: Use the same secret key as in your server.js for signing JWTs
+
 const jwtSecret = process.env.JWT_KEY || 'YOUR_SECRET_KEY';
 
 exports.registerUser = async (req, res, next) => {
