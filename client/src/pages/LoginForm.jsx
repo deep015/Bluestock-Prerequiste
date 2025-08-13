@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setCredentials } from "../store/authSlice";
+import { setCredentials } from "../store/store";
 import InputField from "../components/InputField";
 import { loginUser } from "../services/authService";
 
@@ -15,7 +15,7 @@ export default function LoginForm({ toggleView }) {
   const { mutate, isLoading, error } = useMutation({
     mutationFn: loginUser,
  onSuccess: (data) => {
-  // Save token in Redux (user is null for now)
+  
   dispatch(setCredentials({ token: data.token, user: data.user }));
 
   // Store token in localStorage
@@ -33,11 +33,15 @@ export default function LoginForm({ toggleView }) {
   const onSubmit = (formData) => mutate(formData);
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="w-full flex flex-col gap-4 text-black dark:text-white"
-    >
-      <h2 className="text-2xl font-bold text-center">Login as a Company</h2>
+       <div className="w-full h-130 flex flex-col gap-6 text-black dark:text-white">
+        <h2 className="text-2xl font-bold text-center text-[#1e0e4b] dark:text-white">
+         Login as a Company
+        </h2>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="w-full  flex mt-18  flex-col text-black dark:text-white"
+        >
+      
 
       {error && (
         <p className="bg-red-100 text-red-600 p-2 rounded">
@@ -46,12 +50,12 @@ export default function LoginForm({ toggleView }) {
       )}
 
       <InputField
-        label="Email"
+        label="EmailID"
         placeholder="Enter your email"
         {...register("email", { required: "Email is required" })}
         error={errors.email?.message}
       />
-
+    <a href="" className="text-blue-400 hover:underline font-semibold text-sm pb-6">Login in with OTP</a>
       <InputField
         label="Password"
         type="password"
@@ -59,7 +63,7 @@ export default function LoginForm({ toggleView }) {
         {...register("password", { required: "Password is required" })}
         error={errors.password?.message}
       />
-
+      <a href="" className="text-blue-400 hover:underline font-semibold text-sm pb-8">Forget Password ?</a>
       <button
         type="submit"
         className="bg-blue-500 h-11 w-full rounded-full text-white font-medium shadow-md hover:bg-blue-600 disabled:opacity-50"
@@ -78,5 +82,6 @@ export default function LoginForm({ toggleView }) {
         </span>
       </div>
     </form>
+    </div>
   );
 }

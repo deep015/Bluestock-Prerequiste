@@ -48,12 +48,13 @@ const handleRegister = async (e) => {
 
   return (
     <>
-      <div className="w-full flex flex-col gap-6 text-black dark:text-white">
-        <h2 className="text-2xl font-bold text-center">Register as a Company</h2>
-
+      <div className="w-full h-135 px-10 pb-55 flex flex-col gap-6 text-black dark:text-white">
+        <h2 className="text-2xl font-bold text-center text-[#1e0e4b] dark:text-white">
+         Register as a Company
+        </h2>
         {error && <p className="bg-red-100 text-red-600 p-2 rounded">{error}</p>}
 
-        <form onSubmit={handleRegister} className="flex flex-col gap-4 w-full">
+        <form onSubmit={handleRegister} className="flex pb-36 flex-col gap-4 w-full">
           <InputField
             label="Full Name"
             type="text"
@@ -97,7 +98,7 @@ const handleRegister = async (e) => {
               ))}
             </div>
           </div>
-
+    <div className="flex flex-row">
           <InputField
             label="Password"
             type="password"
@@ -110,7 +111,7 @@ const handleRegister = async (e) => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
-
+</div>
           <div className="flex items-start gap-2 text-sm">
             <input type="checkbox" className="mt-1 w-6 h-6 accent-blue-500" required />
             <span className="text-gray-600">
@@ -122,7 +123,7 @@ const handleRegister = async (e) => {
 
           <button
             type="submit"
-            className="bg-blue-500 h-11 w-full rounded-full text-white font-medium shadow-md hover:bg-blue-600"
+            className="bg-blue-500 h-8 w-full rounded-full text-white font-medium shadow-md hover:bg-blue-600"
           >
             Register
           </button>
