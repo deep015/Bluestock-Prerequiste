@@ -1,37 +1,82 @@
 import React from "react";
-import { CiLock } from "react-icons/ci";
-const LoginPage = () => {
+import { useForm } from "react-hook-form";
+import { useMutation } from "@tanstack/react-query";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setCredentials } from "../store/authSlice";
+import InputField from "../components/InputField";
+import { loginUser } from "../services/authService";
+
+export default function LoginForm({ toggleView }) {
+  const { register, handleSubmit, formState: { errors } } = useForm();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { mutate, isLoading, error } = useMutation({
+    mutationFn: loginUser,
+ onSuccess: (data) => {
+  // Save token in Redux (user is null for now)
+  dispatch(setCredentials({ token: data.token, user: data.user }));
+
+  // Store token in localStorage
+  localStorage.setItem("token", data.token);
+
+  console.log("Login success, token:", data.token);
+  navigate("/company/register");
+},
+
+    onError: (err) => {
+      console.error("Login error:", err.message || err);
+    },
+  });
+
+  const onSubmit = (formData) => mutate(formData);
+
   return (
-    <>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="w-full flex flex-col gap-4 text-black dark:text-white"
+    >
+      <h2 className="text-2xl font-bold text-center">Login as a Company</h2>
 
-<div class="max-w-md h-135 relative flex flex-col p-4 rounded-md text-black bg-white">
-    <div class="text-2xl font-bold  text-[#1e0e4b] text-center">Login as a Comapny</div>
-   
-<form class="flex flex-col gap-3 mt-15">
-    <div class="block relative"> 
-    <label for="email" class="block text-black font-semibold cursor-text text-sm leading-[140%]  mb-2">Email</label>
-    <input type="text" id="email" class="rounded border border-gray-300 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2  ring-gray-900 outline-0"/>
-    </div>
-     <div>
-    <a class="text-sm font-semibold text-[#478aff]" href="#">Login with OTP
-    </a>
-    </div>
-    <div class="block relative"> 
-    <label for="password" class="block text-gray-600 cursor-text text-sm leading-[140%] font-semibold mb-2">Password</label>
-    <input type="text" id="password" class="rounded border border-gray-300 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0"/>
-    
-    </div>
-    <div>
-    <a class="text-sm font-semibold text-[#478aff]" href="#">Forgot your password?
-    </a></div>
-    <button type="submit" class="bg-[#478aff] w-full rounded-4xl m-auto px-6 py-3 text-white text-sm font-normal">Login</button>
+      {error && (
+        <p className="bg-red-100 text-red-600 p-2 rounded">
+          {error.message || "Login failed"}
+        </p>
+      )}
 
-  </form>
-  <div class="text-sm text-center mt-[1.6rem]">
-    Don’t have an account? <a class="text-sm text-[#7747ff]" href="#">Sign up </a></div>
-</div>
-    </>
+      <InputField
+        label="Email"
+        placeholder="Enter your email"
+        {...register("email", { required: "Email is required" })}
+        error={errors.email?.message}
+      />
+
+      <InputField
+        label="Password"
+        type="password"
+        placeholder="Enter your password"
+        {...register("password", { required: "Password is required" })}
+        error={errors.password?.message}
+      />
+
+      <button
+        type="submit"
+        className="bg-blue-500 h-11 w-full rounded-full text-white font-medium shadow-md hover:bg-blue-600 disabled:opacity-50"
+        disabled={isLoading}
+      >
+        {isLoading ? "Logging In..." : "Login"}
+      </button>
+
+      <div className="text-center text-sm text-gray-600">
+        Don't have an account?{" "}
+        <span
+          onClick={toggleView}
+          className="text-blue-500 font-medium cursor-pointer hover:underline"
+        >
+          Sign up
+        </span>
+      </div>
+    </form>
   );
-};
-
-export default LoginPage;
+}

@@ -1,6 +1,6 @@
 // File: /backend/src/controllers/authController.js
 
-const admin = require('../config/firebaseConfig');
+const admin = require('../config/firebaseAdmin');
 const bcrypt = require('bcrypt');
 const userModel = require('../models/userModel');
 const jwt = require('jsonwebtoken');
@@ -46,13 +46,12 @@ exports.registerUser = async (req, res, next) => {
     });
 
     res.status(201).json({
-      message: 'User registered successfully. An email verification link has been sent to your inbox. Please also verify your mobile number.',
-      user: {
-        id: newUser.id,
-        email: newUser.email
-      }
-    });
+  message: 'User registered successfully. An email verification link has been sent to your inbox. Please also verify your mobile number.',
+  userId: newUser.id,
+  email: newUser.email
+});
 
+ 
   } catch (error) {
     if (error.code === 'auth/email-already-exists') {
       return res.status(409).json({ message: 'Email already in use.' });
@@ -91,35 +90,54 @@ exports.loginUser = async (req, res, next) => {
   }
 };
 
+
 exports.verifyEmail = async (req, res, next) => {
   try {
     const { oobCode } = req.query;
-    
-    const email = await admin.auth().verifyActionCode(oobCode);
-    await admin.auth().applyActionCode(oobCode);
-    
-    const user = await userModel.findByEmail(email);
-    if (user) {
-      await userModel.updateEmailVerificationStatus(user.id);
+
+    if (!oobCode) {
+      return res.status(400).json({ message: 'Missing verification code.' });
     }
 
-    res.status(200).json({ message: 'Email verified successfully.' });
+    // Verify and apply the Firebase action code
+    const info = await admin.auth().checkActionCode(oobCode);
+    await admin.auth().applyActionCode(oobCode);
+
+    // info.data.email contains the verified email
+    const email = info.data.email;
+
+    // Update in your database
+    const user = await userModel.findOne({ where: { email } });
+    if (user) {
+      user.is_email_verified = true;
+      await user.save();
+    }
+
+    return res.status(200).json({ message: 'Email verified successfully.' });
   } catch (error) {
-    res.status(400).json({ message: 'Invalid or expired email verification link.' });
+    console.error('Email verification error:', error);
+    return res.status(400).json({ message: 'Invalid or expired email verification link.' });
   }
 };
 
+// ✅ Mobile verification
 exports.verifyMobile = async (req, res, next) => {
   try {
-    const { firebase_uid } = req.body;
+    const { userId } = req.body;
 
-    const user = await userModel.findByFirebaseUid(firebase_uid);
-    if (user) {
-      await userModel.updateMobileVerificationStatus(user.id);
+    if (!userId) {
+      return res.status(400).json({ message: 'Missing user ID.' });
     }
 
-    res.status(200).json({ message: 'Mobile number verified successfully.' });
+    const user = await userModel.findByPk(userId);
+    if (user) {
+      user.is_mobile_verified = true;
+      await user.save();
+    }
+
+    return res.status(200).json({ message: 'Mobile number verified successfully.' });
   } catch (error) {
-    res.status(400).json({ message: 'Failed to verify mobile number.' });
+    console.error('Mobile verification error:', error);
+    return res.status(400).json({ message: 'Failed to verify mobile number.' });
   }
 };

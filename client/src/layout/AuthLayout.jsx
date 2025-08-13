@@ -1,18 +1,19 @@
+// client/src/layouts/AuthLayout.jsx
 import React from "react";
-import SideBanner from "../components/SideBanner";
 import { Outlet } from "react-router-dom";
+import SideBanner from "../components/SideBanner";
 
 const AuthLayout = () => {
   return (
-    <div className="flex items-center justify-center min-h-screen p-6 dark:bg-gray-900">
-      <div className="w-full max-w-4xl  rounded-3xl shadow-2xl overflow-hidden md:flex dark:bg-gray-800 p-10 gap-6">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
+      <div className="w-full max-w-5xl rounded-3xl bg-white dark:bg-gray-800 shadow-2xl overflow-hidden md:flex">
         
-        {/* Left Side - Always same */}
+        {/* Left side: Banner */}
         <SideBanner />
 
-        {/* Right Side - Changes based on route */}
-        <div className="flex flex-col gap-6 justify-center w-full md:w-1/2">
-          <Outlet /> {/* This will render Login/Register/HomePage content */}
+        {/* Right side: Auth form */}
+        <div className="flex flex-col justify-center w-full md:w-1/2 p-8">
+          <Outlet />
         </div>
       </div>
     </div>
